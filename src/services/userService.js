@@ -13,7 +13,7 @@ const fetchUser = async (id) => {
 
 const fetchUsers = async () => {
   try {
-    const query = "SELECT * FROM users";
+    const query = "SELECT name, contact, dob AS date_of_birth FROM users";
     const result = await pool.query(query);
     return result.rows;
   } catch (error) {
