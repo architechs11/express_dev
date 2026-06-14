@@ -1,23 +1,30 @@
 const pool = require("../config/db");
 const { generateToken } = require("../utils/jwt");
 
-const login = async (contact, password) => {
-  if (!contact || !password) {
-    throw new Error("Contact and password are required");
-  }
-  const query =
-    "SELECT id, name FROM users WHERE contact = $1 AND password = $2";
+const bcrypt = require("bcrypt");
 
-  const user = await pool.query(query, [contact, password]);
+const login = async (email, password) => {
+  if (!email || !password) {
+    throw new Error("Email and password are required");
+  }
+  const query = 'SELECT id, role, password FROM "User" WHERE email = $1';
+
+  const user = await pool.query(query, [email]);
 
   if (user.rows.length === 0) {
     throw new Error("Invalid details");
   }
 
+  const isMatch = await bcrypt.compare(password, user.rows[0].password);
+
+  if (!isMatch) {
+    throw new Error("Invalid credentials");
+  }
+
   // return user.rows[0];/
   const token = generateToken({
     userId: user.rows[0].id,
-    name: user.rows[0].name,
+    role: user.rows[0].role,
   });
   return token;
 };

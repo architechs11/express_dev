@@ -29,13 +29,13 @@ const fetchUsers = async (req, res, next) => {
 
 const createUser = async (req, res, next) => {
   try {
-    const { name, contact, dob } = req.body;
+    const { name, email, dob, password, role } = req.body;
 
-    if (!name || !contact || !dob) {
+    if (!name || !email || !dob || !password || !role) {
       return res.status(400).json({ message: "All details are required" });
     }
 
-    const user = await userService.createUser(name, contact, dob);
+    const user = await userService.createUser(name, email, dob, password, role);
     res.status(201).json(user);
   } catch (error) {
     next(error);

@@ -1,8 +1,9 @@
 const pool = require("../config/db");
+const bcrypt = require("bcrypt");
 
 const fetchUser = async (id) => {
   try {
-    const query = `SELECT * FROM users WHERE id = $1`;
+    const query = `SELECT name, email, dob AS date_of_birth FROM "User" WHERE id = $1`;
     const result = await pool.query(query, [id]);
     return result.rows[0] || null;
   } catch (error) {
@@ -13,7 +14,7 @@ const fetchUser = async (id) => {
 
 const fetchUsers = async () => {
   try {
-    const query = "SELECT name, contact, dob AS date_of_birth FROM users";
+    const query = 'SELECT name, email, dob AS date_of_birth FROM "User"';
     const result = await pool.query(query);
     return result.rows;
   } catch (error) {
@@ -22,14 +23,23 @@ const fetchUsers = async () => {
   }
 };
 
-const createUser = async (name, contact, dob) => {
+const createUser = async (name, email, dob, password, role) => {
   try {
-    if (!name || !contact || !dob) {
+    if (!name || !email || !dob || !password || !role) {
       throw new Error("Missing required fields");
     }
 
-    const query = `INSERT INTO users (name, contact, dob) VALUES ($1, $2, $3) RETURNING *;`;
-    const result = await pool.query(query, [name, contact, dob]);
+    const hashedPassword = await bcrypt.hash(password, 12);
+
+    const query = `INSERT INTO "User" (name, email, dob, password, role) VALUES ($1, $2, $3, $4, $5) RETURNING *;`;
+    const result = await pool.query(query, [
+      name,
+      email,
+      dob,
+      hashedPassword,
+      role,
+    ]);
+
     return result.rows[0];
   } catch (error) {
     console.error("Error creating user:", error);
